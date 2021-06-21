@@ -12,8 +12,8 @@ routes = [
   },
   //<editor-fold desc="mHBS Guide Routes" defaultstate="collapsed">
   {
-    path: '/testvideo/',
-    url: './pages/testvideo.html'
+    path: '/mediaPage/',
+    url: './pages/mediaPage.html'
   },
   {
     path: '/page1/',

@@ -1,4 +1,5 @@
 var $$ = Dom7;
+var debugTag = "mHBSTrainerAppLogs"
 // Framework7 App main instance
 var app = new Framework7({
   root: '#app', // App root element
@@ -62,7 +63,7 @@ var secureParamsStored = 0;
 var myPhotoBrowserPopupDark;
 var logCount = 0;
 var videoCaption = "";
-var appServer = 'https://mhbs.info/api/';
+var appServer = 'https://bmgfdev.soic.iupui.edu/api/';
 var documentList = [];
 var downloadAble = false;
 var secureStorageInactive = true;
@@ -73,9 +74,9 @@ var networkUsage = 1;
 var paused = 0;
 var userId = '';
 var tempCredentials = {
-  username: '',
-  password: '',
-  serverURL: ''
+  username: 'testuser',
+  password: 'Admin@123',
+  serverURL: 'https://bmgfdev.soic.iupui.edu/api/'
 };
 
 var download = false;
@@ -87,9 +88,7 @@ var homeView = app.views.create('#view-home', {
 });
 
 var videoListView = app.views.create('#view-videoList', {
-  //change testvideo to videoList for furtur work.
-  //testvideo is for v 2.0
-  url: '/testvideo/'
+  url: '/mediaPage/'
 });
 
 $$('#view-videoList').on('tab:show', function () {
@@ -599,9 +598,10 @@ function writeFile(fileEntry, dataObj) {
 
 // get password from local storage and then get docs from server
 function accessOnlineContent() {
-  getPasswordFromSecure(getDocsFromServer);
+  // getPasswordFromSecure(getDocsFromServer);
 }
 
+/*
 // get list of documents from mhbs.info/api/documents triggered when clicking on 'videos'
 function getDocsFromServer(password) {
   var rawDocuments = {
@@ -621,6 +621,7 @@ function getDocsFromServer(password) {
       alert(error + "The content is not retrievable");
     })
 }
+*/
 
 // get XML content from dhis2 web API
 function accessOnlineDocuments(rawXML) {
@@ -664,6 +665,56 @@ function accessOnlineDocuments(rawXML) {
   }
 }
 
+function showDocuments(videoListData){
+  ul = document.getElementById('videoListMedia');
+  var i;
+  for(i = 0; i < videoListData.length; i++) {
+
+    let li = document.createElement('li');
+    li.className = 'item-link';
+    li.className += 'item-content';
+    li.setAttribute('data-mediaId',videoListData[i].id);
+    li.innerHTML += '<a href="#" class="item-link item-content">'+
+    '<div class="item-media" data-mediaId="'+videoListData[i].id+'"><img src="img/icon1.png" width="44"/></div>'+
+    '<div class="item-inner" data-mediaId="'+videoListData[i].id+'">'+
+    ' <div class="item-title-row" data-mediaId="'+videoListData[i].id+'">'+
+        '<div class="item-title" data-mediaId="'+videoListData[i].id+'">'+videoListData[i].displayName+'</div>'+
+      '</div>'
+    '</a>';
+    ul.appendChild(li);
+  }
+  app.preloader.hide;
+}
+
+function playVideo(html_data){
+  var photos1 = [
+    {
+      html : html_data,
+      captions: ''
+    }
+  ];
+  myPhotoBrowserPopupDark1 = app.photoBrowser.create({
+    photos: photos1,
+    theme: 'dark',
+    type: 'popup',
+    navbar: true,
+    navbarOfText: " Title of Video ",
+    toolbar: false,
+  });
+  // ready to show video
+  myPhotoBrowserPopupDark1.open();
+}
+
+function downloadDocumentsFromServer(){
+  var url = appServer + 'documents';
+  app.preloader.show;
+  //var url = "https://jsonplaceholder.typicode.com/photos";
+  getFromServer(url,function(request){
+    var myArr = JSON.parse(request.response);
+    showDocuments(myArr.documents);
+  });  
+}
+
 // gets video duration, can also grab other desired data here
 function parseMetaData(doc) {
   var video = document.createElement("video");
@@ -704,7 +755,6 @@ function parseMetaData(doc) {
   req.send();
 }
 
-
 function thumbnail(video) {
   var canvas = document.createElement('canvas');
   canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
@@ -733,7 +783,6 @@ function getContentTypes(parser, doc, id, callback) {
       alert(error + "The content is not retrievable");
     });
 }
-
 
 // add event listeners
 document.addEventListener("deviceready", function (e) {
@@ -1005,10 +1054,12 @@ function getDateStamp() {
   var currentDate = new Date();
   return currentDate.getDate() + "/" + (currentDate.getMonth() + 1) + "/" + currentDate.getFullYear();
 }
+
 function getYesterdayDate(){
   var currentDate = new Date();
   return currentDate.getFullYear()+"-"+(currentDate.getMonth() + 1)+"-"+(currentDate.getDate()-1);
 }
+
 function getTodayDate(){
   var currentDate = new Date();
   return currentDate.getFullYear()+"-"+(currentDate.getMonth() + 1)+"-"+(currentDate.getDate());
@@ -1175,10 +1226,12 @@ function setUpAfterOutEvent(pageName) {
     // sendAnswerToFabric(page.name);
   });
 }
+
 function setOrgUnit(userId){
   var index = app.data.user.pin.split(',').indexOf(userId);
   return app.data.user.orgUnit.split(',')[index];
 }
+
 function setTrackerIds(userId){
   var index = app.data.user.pin.split(',').indexOf(userId);
   return app.data.user.trackerIds.split(',')[index];
@@ -1259,6 +1312,7 @@ var eventPayload = {
     {"dataElement": "qbT1F1k8cD7", "value": ""},
   ]
 };
+
 //this function registers trackedEntityInstance in app usage
 function registerInAppUsage(){
   var registerpayload = {
@@ -1322,4 +1376,12 @@ function clearPayloadValues() {
   storage.setItem(app.data.user.orgUnit, JSON.stringify(0));
   storage.setItem(app.data.user.trackerIds,JSON.stringify(0));
   storage.setItem("timeOffline", null);
+}
+
+function getFromServer(url, cFunction) {
+  const xhttp = new XMLHttpRequest();
+  xhttp.onload = function() {cFunction(this);}
+  xhttp.open("GET", url);
+  xhttp.setRequestHeader('Authorization', 'Basic ' + btoa("testuser" + ":" + "Admin@123"));
+  xhttp.send();
 }

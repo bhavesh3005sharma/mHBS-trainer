@@ -1,0 +1,1 @@
+{"plugins":["cordova-plugin-whitelist","com-darryncampbell-cordova-plugin-intent","cordova-plugin-dialogs","cordova-plugin-file","cordova-plugin-network-information","cordova-plugin-secure-storage","cordova-fabric-plugin","cordova-custom-config","com.lampa.startapp"]}
